@@ -37,13 +37,21 @@ jobs:
           node-version-file: '.nvmrc'
           registry-url: 'https://registry.npmjs.org'
 
-      # Trusted publishing (OIDC) needs npm >= 11.5.1. Node 24 ships a new
-      # enough npm, but pin the floor explicitly so a runner image change
-      # cannot silently drop us below it and fall back to token auth.
+      # Trusted publishing (OIDC) needs npm >= 11.5.1. Assert the floor rather
+      # than upgrading: `npm install -g npm@latest` resolves to a version whose
+      # own engines range can exclude the Node version pinned in .nvmrc, which
+      # fails the job for no reason.
       - name: Ensure npm supports trusted publishing
         run: |
-          npm install -g npm@latest
-          npm --version
+          version=$(npm --version)
+          echo "npm $version"
+          node -e '
+            const [maj, min] = process.argv[1].split(".").map(Number);
+            if (maj < 11 || (maj === 11 && min < 5)) {
+              console.error(`npm ${process.argv[1]} is too old for trusted publishing (need >= 11.5.1)`);
+              process.exit(1);
+            }
+          ' "$version"
 
       - name: Read package version
         id: pkg
