@@ -2,8 +2,8 @@ import { CODEX_MCP_ADD_ARGS } from "../generated/connect-facts";
 import { CODEX_MIN_VERSION, isBelowMinimumVersion, parseCodexVersion } from "../lib/codex-version";
 import { commandExists, dirExists } from "../lib/detect";
 import type { Env } from "../lib/env";
+import { describeExistingServer, isAlreadyExistsFailure } from "../lib/existing-server";
 import { codexHomeDir, codexSkillPath } from "../lib/paths";
-import { isAlreadyExistsFailure } from "./claude-code";
 import type { HarnessAdapter, HarnessInstallResult, InstallOptions, StepResult } from "./types";
 import { writeSkillFile } from "./write-skill-file";
 
@@ -38,11 +38,7 @@ async function addMcpServer(env: Env, dryRun: boolean): Promise<StepResult> {
 	}
 
 	if (isAlreadyExistsFailure(`${result.stdout}\n${result.stderr}`)) {
-		return {
-			action: "mcp config",
-			status: "skipped",
-			detail: "tailwind MCP server is already configured",
-		};
+		return describeExistingServer(env, "codex", "tailwind", "codex mcp remove tailwind");
 	}
 
 	return {
@@ -81,8 +77,11 @@ export const codexAdapter: HarnessAdapter = {
 			label: "Codex",
 			steps,
 			ok: steps.every((step) => step.status !== "failed"),
+			// `codex mcp add` only records the server. Without the login step the
+			// install looks successful while Tailwind stays unauthenticated, so the
+			// command has to be part of the closing instructions, not just the docs.
 			restartGuidance:
-				"Codex reads its MCP config at startup — restart your Codex session to pick up the new connection.",
+				"Run `codex mcp login tailwind` to authenticate, then restart your Codex session — Codex reads its MCP config at startup.",
 		};
 	},
 };

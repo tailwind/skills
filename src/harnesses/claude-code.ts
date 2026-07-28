@@ -1,19 +1,10 @@
 import { CLAUDE_CODE_MCP_ADD_ARGS } from "../generated/connect-facts";
 import { commandExists, dirExists } from "../lib/detect";
 import type { Env } from "../lib/env";
+import { describeExistingServer, isAlreadyExistsFailure } from "../lib/existing-server";
 import { claudeCodeHomeDir, claudeCodeSkillPath } from "../lib/paths";
 import type { HarnessAdapter, HarnessInstallResult, InstallOptions, StepResult } from "./types";
 import { writeSkillFile } from "./write-skill-file";
-
-/**
- * `claude mcp add` fails (non-zero exit) when a server with this name is
- * already registered — it does not overwrite. That failure is the expected
- * shape of a second, idempotent run, so it must be treated as success, not
- * surfaced as an error.
- */
-export function isAlreadyExistsFailure(output: string): boolean {
-	return /already exists/i.test(output);
-}
 
 async function addMcpServer(env: Env, dryRun: boolean): Promise<StepResult> {
 	const commandPreview = `claude ${CLAUDE_CODE_MCP_ADD_ARGS.join(" ")}`;
@@ -28,11 +19,12 @@ async function addMcpServer(env: Env, dryRun: boolean): Promise<StepResult> {
 	}
 
 	if (isAlreadyExistsFailure(`${result.stdout}\n${result.stderr}`)) {
-		return {
-			action: "mcp config",
-			status: "skipped",
-			detail: "tailwind MCP server is already configured",
-		};
+		return describeExistingServer(
+			env,
+			"claude",
+			"tailwind",
+			"claude mcp remove tailwind --scope user",
+		);
 	}
 
 	return {

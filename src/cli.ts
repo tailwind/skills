@@ -148,8 +148,12 @@ function formatReport(results: readonly HarnessInstallResult[], dryRun: boolean)
 						: step.status === "skipped"
 							? "skipped"
 							: "FAILED";
-			const target = step.path ? ` ${step.path}` : step.detail ? ` (${step.detail})` : "";
-			lines.push(`  [${marker}] ${step.action}${target}`);
+			// Path and detail are not alternatives. A failed Cursor config write
+			// reports both — the file it refused to touch, and why — and dropping
+			// the reason leaves the user with no idea what to fix.
+			const location = step.path ? ` ${step.path}` : "";
+			const reason = step.detail ? ` (${step.detail})` : "";
+			lines.push(`  [${marker}] ${step.action}${location}${reason}`);
 		}
 	}
 
@@ -224,7 +228,26 @@ export async function run(
 
 	const results: HarnessInstallResult[] = [];
 	for (const adapter of selected) {
-		results.push(await adapter.install(env, { home, skillMarkdown, dryRun: options.dryRun }));
+		try {
+			results.push(await adapter.install(env, { home, skillMarkdown, dryRun: options.dryRun }));
+		} catch (error) {
+			// One unwritable directory should not cost the user every other
+			// harness, nor discard the report of what already succeeded. Record the
+			// failure against its own harness and carry on.
+			results.push({
+				id: adapter.id,
+				label: adapter.label,
+				steps: [
+					{
+						action: "install",
+						status: "failed",
+						detail: error instanceof Error ? error.message : "an unexpected error occurred",
+					},
+				],
+				ok: false,
+				restartGuidance: "",
+			});
+		}
 	}
 
 	io.write(formatReport(results, options.dryRun));

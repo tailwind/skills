@@ -53,6 +53,31 @@ describe("run — --dry-run", () => {
 	});
 });
 
+describe("run — reporting a refused config", () => {
+	// Refusing to overwrite a config we cannot parse is only half the safety
+	// behaviour; the user also has to be told why. An earlier version printed the
+	// path and dropped the reason, leaving no way to tell what went wrong.
+	it("reports both the file it refused to touch and the reason it refused", async () => {
+		const { env } = createFakeEnv({
+			homedir: HOME,
+			files: {
+				...BUNDLED_SKILL_FILES,
+				[`${HOME}/.cursor/mcp.json`]: "{ this is not valid json",
+			},
+		});
+		const { io, output } = makeIo();
+
+		const exitCode = await run(env, ["--yes", "--harness", "cursor"], io, "0.0.1-test");
+		const report = output.join("");
+
+		expect(exitCode).toBe(1);
+		expect(report).toContain("[FAILED] mcp config");
+		expect(report).toContain(`${HOME}/.cursor/mcp.json`);
+		expect(report).toContain("invalid JSON");
+		expect(report).toContain("left untouched");
+	});
+});
+
 describe("run — idempotency", () => {
 	it("running twice with --yes against the same forced harness produces identical file content", async () => {
 		const { env, files } = createFakeEnv({ homedir: HOME, files: BUNDLED_SKILL_FILES });
@@ -106,5 +131,29 @@ describe("run — --help and --version", () => {
 
 		expect(exitCode).toBe(0);
 		expect(output.join("")).toContain("9.9.9");
+	});
+});
+
+describe("run — one harness failing", () => {
+	// A single unwritable directory should not cost the user the harnesses that
+	// would have installed fine, nor throw away the report of what did work.
+	it("still installs the other harnesses and reports the one that failed", async () => {
+		const { env, files } = createFakeEnv({
+			homedir: HOME,
+			files: BUNDLED_SKILL_FILES,
+			failWritesTo: [`${HOME}/.cursor/skills/tailwind-pinterest-scheduling/SKILL.md`],
+		});
+		const { io, output } = makeIo();
+
+		const exitCode = await run(env, ["--yes", "--harness", "cursor,codex"], io, "0.0.1-test");
+		const report = output.join("");
+
+		expect(exitCode).toBe(1);
+		expect(report).toContain("Cursor");
+		expect(report).toContain("Codex");
+		// Codex still got its playbook despite Cursor blowing up first.
+		expect(
+			files.get(`${HOME}/.agents/skills/tailwind-pinterest-scheduling/SKILL.md`),
+		).toBeDefined();
 	});
 });

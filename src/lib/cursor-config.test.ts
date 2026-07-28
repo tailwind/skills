@@ -66,4 +66,30 @@ describe("mergeCursorMcpConfig", () => {
 		expect(result.content.endsWith("\n")).toBe(true);
 		expect(result.content).toContain('  "mcpServers"');
 	});
+
+	// A present-but-wrong-shaped mcpServers used to fall back to an empty object,
+	// which read as a merge while silently discarding whatever was there. These
+	// pin the refusal instead — the same treatment unparseable JSON gets.
+	it.each([
+		["an array", "[]"],
+		["a string", '"nope"'],
+		["null", "null"],
+		["a number", "3"],
+	])("refuses to write when mcpServers is %s, rather than replacing it", (_label, value) => {
+		const result = mergeCursorMcpConfig(`{ "mcpServers": ${value} }`);
+
+		expect(result.ok).toBe(false);
+		if (!result.ok) expect(result.reason).toContain("mcpServers");
+	});
+
+	it("still creates mcpServers when the key is simply absent", () => {
+		const result = mergeCursorMcpConfig('{ "someOtherSetting": true }');
+
+		expect(result.ok).toBe(true);
+		if (result.ok) {
+			const parsed = JSON.parse(result.content);
+			expect(parsed.someOtherSetting).toBe(true);
+			expect(parsed.mcpServers.tailwind).toEqual({ url: MCP_SERVER_URL });
+		}
+	});
 });

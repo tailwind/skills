@@ -1,6 +1,9 @@
 # Build output — emitted by `npm run build:dist` for publishing only.
-# src/generated/connect-facts.ts IS committed on purpose: this mirror has no
-# monorepo above it, so the generated connect facts must already be in source.
+# src/generated/connect-facts.ts IS committed on purpose: the published package
+# must build standalone from the public mirror, which has no monorepo (and no
+# @tailwind-aero/core) present.
 dist/
 *.tsbuildinfo
+# Only relevant once this file is synced to the mirror, which installs its own
+# dependencies rather than sharing the monorepo's.
 node_modules/

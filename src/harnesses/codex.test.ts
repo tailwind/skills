@@ -67,4 +67,21 @@ describe("codexAdapter", () => {
 		await codexAdapter.install(env, { home: HOME, skillMarkdown: "# skill", dryRun: true });
 		expect(calls.execFile).toHaveLength(0);
 	});
+
+	// `codex mcp add` records the server but does not authenticate. Without this
+	// instruction the install reports success while Tailwind stays unusable, so
+	// the login command has to survive in the closing guidance.
+	it("tells the user to complete the OAuth login, not just to restart", async () => {
+		const { env } = createFakeEnv({
+			execFile: async () => ({ code: 0, stdout: "", stderr: "" }),
+		});
+
+		const result = await codexAdapter.install(env, {
+			home: HOME,
+			skillMarkdown: "# skill",
+			dryRun: false,
+		});
+
+		expect(result.restartGuidance).toContain("codex mcp login tailwind");
+	});
 });

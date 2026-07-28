@@ -54,10 +54,14 @@ see the [setup documentation](https://api-docs.tailwind.ai/mcp/setup).
 
 ## No telemetry
 
-This installer sends nothing anywhere. It has **no runtime dependencies** and makes **no
-network requests** — it reads and writes local files and shells out to CLIs you already have.
-The playbook ships inside the published package, so installing does not fetch anything from
-Tailwind's servers.
+This installer sends nothing anywhere. It has **no runtime dependencies**, and once running it
+makes **no outbound requests of its own** — it reads and writes local files and shells out to
+CLIs you already have. The playbook ships inside the published package, so nothing is fetched
+from Tailwind's servers at any point, including on `--dry-run`.
+
+To be precise about the one network step involved: `npx` downloads the package from npm the
+first time, exactly as it would for any package. That is npm fetching the tarball, not the
+installer calling home — and it is why a pinned version is fixed once you have it.
 
 That's deliberate. This tool writes instructions your coding agent will follow, so it should be
 something you can read in full and pin, not something that changes underneath you.
@@ -67,7 +71,7 @@ something you can read in full and pin, not something that changes underneath yo
 Every published version is immutable. To pin one:
 
 ```bash
-npx @tailwind-app/skills@0.0.1
+npx @tailwind-app/skills@0.0.2
 ```
 
 To read the playbook before installing anything, without running the installer at all:

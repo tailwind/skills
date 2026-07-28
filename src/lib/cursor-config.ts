@@ -36,12 +36,23 @@ export function mergeCursorMcpConfig(existingRaw: string | undefined): CursorMer
 	}
 
 	const existingServersValue = parsed.mcpServers;
-	const existingServers: Record<string, unknown> =
+	const hasServers = existingServersValue !== undefined;
+	const serversAreObject =
 		existingServersValue !== null &&
 		typeof existingServersValue === "object" &&
-		!Array.isArray(existingServersValue)
-			? (existingServersValue as Record<string, unknown>)
-			: {};
+		!Array.isArray(existingServersValue);
+
+	// A present-but-wrong-shaped `mcpServers` (array, string, null) gets the same
+	// treatment as unparseable JSON: refuse. Falling back to an empty object here
+	// would look like a merge while actually discarding whatever the user had —
+	// the one outcome this function exists to prevent.
+	if (hasServers && !serversAreObject) {
+		return { ok: false, reason: "its mcpServers value is not a JSON object" };
+	}
+
+	const existingServers: Record<string, unknown> = serversAreObject
+		? (existingServersValue as Record<string, unknown>)
+		: {};
 
 	const merged = {
 		...parsed,

@@ -43,15 +43,24 @@ unavailable to you, or the read fails, ask the user for the board ID rather than
 guessing one or passing a Board name. There is currently no tool that lists
 Boards, so asking is the correct fallback, not a workaround to avoid.
 
-## Draft first, then schedule, then verify
+## Get the copy right before you create anything
 
-`create_post` without `sendAt` saves a draft. That is the safe default when
-anything is still unconfirmed — the media, the copy, or the Board.
+There is no tool to edit a Pin once it exists. `schedule_post` changes only the
+time and the Board; `create_post` always makes a *new* Pin. So a draft with the
+wrong title, description, media, or destination URL cannot be corrected through
+these tools — the only route is `delete_post` and start again.
 
-Adding `sendAt` schedules the Pin, and scheduling is what makes the extra fields
-mandatory: `title`, `description`, `url`, and `boardId` must all be present.
-`schedule_post` moves an existing draft or queued post to a time, and expects
-`title`, `description`, and `url` to already be set.
+Confirm the copy and the media with the user **before** calling `create_post`.
+Do not save a rough draft intending to refine it later.
+
+The Board is the exception, and the one thing you can safely defer: `boardId`
+can be supplied later when you call `schedule_post`.
+
+`create_post` without `sendAt` saves a draft, which is right when the timing is
+undecided but the content is settled. Adding `sendAt` schedules it, and makes
+`title`, `description`, `url`, and `boardId` all mandatory. `schedule_post`
+moves an existing draft or queued Pin to a time and expects `title`,
+`description`, and `url` to already be set.
 
 After scheduling, confirm it landed with `list_posts` using `status: "queued"`
 rather than assuming success from the tool's response text.
