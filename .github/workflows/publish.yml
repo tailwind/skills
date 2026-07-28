@@ -1,0 +1,94 @@
+name: Publish to npm
+
+# Publishes @tailwind-app/skills to the public npm registry with build provenance.
+#
+# This workflow lives in the public mirror rather than in the private source
+# monorepo on purpose: npm provenance attestations are only publicly verifiable
+# when the publishing workflow runs in a public repository. Publishing from the
+# private repo would forfeit provenance, which is the point of the mirror.
+#
+# Package source is pushed here by the source repo's sync workflow. This repo
+# builds and publishes it; it is not edited by hand.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'package.json'
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Run through publish without actually publishing'
+        type: boolean
+        default: true
+
+permissions:
+  contents: read
+  id-token: write # required for npm provenance
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+          registry-url: 'https://registry.npmjs.org'
+
+      # Trusted publishing (OIDC) needs npm >= 11.5.1. Node 24 ships a new
+      # enough npm, but pin the floor explicitly so a runner image change
+      # cannot silently drop us below it and fall back to token auth.
+      - name: Ensure npm supports trusted publishing
+        run: |
+          npm install -g npm@latest
+          npm --version
+
+      - name: Read package version
+        id: pkg
+        run: |
+          echo "name=$(node -p "require('./package.json').name")" >> "$GITHUB_OUTPUT"
+          echo "version=$(node -p "require('./package.json').version")" >> "$GITHUB_OUTPUT"
+
+      # Idempotent: a re-run, or a push that changed package.json without bumping
+      # the version, must not fail the workflow — it just has nothing to publish.
+      - name: Check whether this version is already published
+        id: check
+        run: |
+          if npm view "${{ steps.pkg.outputs.name }}@${{ steps.pkg.outputs.version }}" version >/dev/null 2>&1; then
+            echo "already=true" >> "$GITHUB_OUTPUT"
+            echo "::notice::${{ steps.pkg.outputs.name }}@${{ steps.pkg.outputs.version }} is already on npm; nothing to publish."
+          else
+            echo "already=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Install dependencies
+        if: steps.check.outputs.already == 'false'
+        run: npm install
+
+      # `build:dist` is tsc only. The full `build` also runs codegen, which
+      # imports the source monorepo's shared guidance module — that dependency
+      # does not exist here by design, since the generated connect facts are
+      # committed. Freshness of those facts is enforced in the source repo's CI
+      # before anything is synced here.
+      - name: Build
+        if: steps.check.outputs.already == 'false'
+        run: npm run build:dist
+
+      - name: Test
+        if: steps.check.outputs.already == 'false'
+        run: npm run test:unit
+
+      # Auth is OIDC via npm trusted publishing — no NODE_AUTH_TOKEN, no
+      # long-lived secret. npm documents provenance as automatic under trusted
+      # publishing, but there is at least one field report of it needing the
+      # explicit flag, so pass it rather than assume. --access public matters
+      # because scoped packages default to restricted.
+      - name: Publish
+        if: steps.check.outputs.already == 'false' && inputs.dry_run != true
+        run: npm publish --provenance --access public
+
+      - name: Publish (dry run)
+        if: steps.check.outputs.already == 'false' && inputs.dry_run == true
+        run: npm publish --provenance --access public --dry-run

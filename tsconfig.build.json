@@ -1,0 +1,24 @@
+{
+	"compilerOptions": {
+		"target": "es2022",
+		"lib": ["es2022"],
+		"module": "CommonJS",
+		"moduleResolution": "node",
+		"ignoreDeprecations": "6.0",
+		"declaration": true,
+		"strict": true,
+		"types": ["node"],
+		"noUncheckedIndexedAccess": true,
+		"esModuleInterop": true,
+		"allowSyntheticDefaultImports": true,
+		"skipLibCheck": true,
+		"removeComments": false,
+		"noEmit": false,
+		"rootDir": "src",
+		"outDir": "dist"
+	},
+	"include": ["src/**/*.ts"],
+	// test-support holds the fake Env used only by tests; excluding it keeps
+	// test scaffolding out of the published tarball.
+	"exclude": ["node_modules", "src/**/*.test.ts", "src/test-support/**"]
+}

@@ -1,0 +1,6 @@
+# Build output — emitted by `npm run build:dist` for publishing only.
+# src/generated/connect-facts.ts IS committed on purpose: this mirror has no
+# monorepo above it, so the generated connect facts must already be in source.
+dist/
+*.tsbuildinfo
+node_modules/
