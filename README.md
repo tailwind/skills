@@ -33,6 +33,19 @@ something it could not parse.
 After installing, restart your agent. Skill files are picked up live by Claude Code and Cursor,
 but all three read MCP server config at startup, and Cursor needs a **Reload Window**.
 
+## Claude plugin
+
+This repository is also a Claude plugin. Claude Code users can install it through `/plugin`
+instead of running the command above, and it uploads to claude.ai under
+Settings > Customize > Plugins. Either way it provides the same two things — the same
+`SKILL.md` and the same remote MCP server — so pick whichever you prefer; running both the
+plugin and the installer is harmless but redundant.
+
+The plugin is this repository root: [`.claude-plugin/plugin.json`](.claude-plugin/plugin.json)
+is the manifest and [`.mcp.json`](.mcp.json) is the server entry, which points at the same
+`https://mcp.tailwind.ai` endpoint the installer configures. There is no bundled executable —
+a plugin install adds a remote server and a Markdown file, nothing that runs locally.
+
 ## Options
 
 ```

@@ -1,0 +1,8 @@
+{
+	"mcpServers": {
+		"tailwind": {
+			"type": "http",
+			"url": "https://mcp.tailwind.ai"
+		}
+	}
+}
