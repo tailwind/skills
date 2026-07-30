@@ -1,6 +1,6 @@
 {
   "name": "@tailwind-app/skills",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "Installs the Tailwind MCP server and skill playbooks into your coding agent (Claude Code, Cursor, or Codex).",
   "private": false,
   "license": "MIT",
