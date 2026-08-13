@@ -1,4 +1,5 @@
 import type { Env } from "../lib/env";
+import type { LoadedSkill } from "../lib/skills";
 
 export type HarnessId = "claude-code" | "cursor" | "codex";
 
@@ -25,14 +26,15 @@ export type HarnessInstallResult = Readonly<{
 
 export type InstallOptions = Readonly<{
 	home: string;
-	skillMarkdown: string;
+	/** Every playbook to install, already read off disk. */
+	skills: readonly LoadedSkill[];
 	dryRun: boolean;
 }>;
 
 export interface HarnessAdapter {
 	readonly id: HarnessId;
 	readonly label: string;
-	skillPath(home: string): string;
+	skillPath(home: string, directoryName: string): string;
 	detect(env: Env, home: string): Promise<boolean>;
 	install(env: Env, options: InstallOptions): Promise<HarnessInstallResult>;
 }

@@ -24,24 +24,20 @@ Scheduling requires `boardId`, and it must be the **numeric board ID as a
 string** — for example `"1106196864631757445"`. A Board name, a Pinterest URL,
 or a slug will be rejected.
 
-Board IDs come from the boards resource:
+Board IDs come from `list_boards`, which takes the account ID and returns each
+Board's numeric ID and name. Call it rather than asking the user to find an ID
+by hand.
+
+The same data is also published as a resource:
 
 ```
 tailwind://accounts/<accountId>/boards
 ```
 
-Two things to get right:
-
-**Substitute the real account ID.** The server advertises this resource with a
-literal placeholder in the URI (`tailwind://accounts/{accountId}/boards`).
-Reading that string verbatim will not return the user's Boards — replace the
-placeholder with the actual numeric account ID before reading.
-
-**If you cannot read MCP resources, ask the user.** Not every client supports
-reading MCP resources on the agent's own initiative. If resource reads are
-unavailable to you, or the read fails, ask the user for the board ID rather than
-guessing one or passing a Board name. There is currently no tool that lists
-Boards, so asking is the correct fallback, not a workaround to avoid.
+If you read it that way, substitute the real account ID — the server advertises
+the URI with a literal `{accountId}` placeholder, and reading that string
+verbatim will not return the user's Boards. `list_boards` needs no such care,
+which is why it is the better route.
 
 ## Get the copy right before you create anything
 
@@ -82,8 +78,8 @@ rather than trying again.
 
 ## When something fails
 
-- **Rejected board ID** — you almost certainly passed a name or URL. Re-read the
-  boards resource with the account ID substituted in.
+- **Rejected board ID** — you almost certainly passed a name or URL. Call
+  `list_boards` and use an ID from the response.
 - **Missing required field on a scheduled Pin** — `title`, `description`, `url`,
   and `boardId` are only required once `sendAt` is present. Either supply them or
   save a draft instead.

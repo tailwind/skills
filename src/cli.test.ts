@@ -1,10 +1,13 @@
 import { describe, expect, it } from "vitest";
 import { CliUsageError, parseArgs, run } from "./cli";
-import { getBundledSkillPath } from "./lib/skill-content";
+import { getBundledSkillPath, SKILL_MANIFEST } from "./lib/skills";
 import { createFakeEnv } from "./test-support/fake-env";
 
 const HOME = "/home/fake-user";
-const BUNDLED_SKILL_FILES = { [getBundledSkillPath()]: "# skill" };
+/** Every manifested playbook, seeded as readable — the normal case. */
+const BUNDLED_SKILL_FILES = Object.fromEntries(
+	SKILL_MANIFEST.map((entry) => [getBundledSkillPath(entry.directoryName), `# ${entry.name}`]),
+);
 
 function makeIo() {
 	const output: string[] = [];

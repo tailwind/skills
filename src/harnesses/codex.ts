@@ -5,7 +5,7 @@ import type { Env } from "../lib/env";
 import { describeExistingServer, isAlreadyExistsFailure } from "../lib/existing-server";
 import { codexHomeDir, codexSkillPath } from "../lib/paths";
 import type { HarnessAdapter, HarnessInstallResult, InstallOptions, StepResult } from "./types";
-import { writeSkillFile } from "./write-skill-file";
+import { writeSkillFiles } from "./write-skill-file";
 
 /**
  * Warns (never hard-fails) when Codex is below the minimum version remote
@@ -58,10 +58,7 @@ export const codexAdapter: HarnessAdapter = {
 	async detect(env, home) {
 		return (await commandExists(env, "codex")) || (await dirExists(env, codexHomeDir(home)));
 	},
-	async install(
-		env: Env,
-		{ home, skillMarkdown, dryRun }: InstallOptions,
-	): Promise<HarnessInstallResult> {
+	async install(env: Env, { home, skills, dryRun }: InstallOptions): Promise<HarnessInstallResult> {
 		const steps: StepResult[] = [];
 
 		if (!dryRun) {
@@ -69,7 +66,14 @@ export const codexAdapter: HarnessAdapter = {
 			if (versionWarning) steps.push(versionWarning);
 		}
 
-		steps.push(await writeSkillFile(env, codexSkillPath(home), skillMarkdown, dryRun));
+		steps.push(
+			...(await writeSkillFiles(
+				env,
+				skills,
+				(directoryName) => codexSkillPath(home, directoryName),
+				dryRun,
+			)),
+		);
 		steps.push(await addMcpServer(env, dryRun));
 
 		return {

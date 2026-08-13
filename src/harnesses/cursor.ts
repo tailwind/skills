@@ -5,7 +5,7 @@ import { dirExists } from "../lib/detect";
 import type { Env } from "../lib/env";
 import { cursorHomeDir, cursorMcpConfigPath, cursorSkillPath } from "../lib/paths";
 import type { HarnessAdapter, HarnessInstallResult, InstallOptions, StepResult } from "./types";
-import { writeSkillFile } from "./write-skill-file";
+import { writeSkillFiles } from "./write-skill-file";
 
 async function writeMcpConfig(env: Env, home: string, dryRun: boolean): Promise<StepResult> {
 	const configPath = cursorMcpConfigPath(home);
@@ -77,12 +77,14 @@ export const cursorAdapter: HarnessAdapter = {
 	async detect(env, home) {
 		return dirExists(env, cursorHomeDir(home));
 	},
-	async install(
-		env: Env,
-		{ home, skillMarkdown, dryRun }: InstallOptions,
-	): Promise<HarnessInstallResult> {
+	async install(env: Env, { home, skills, dryRun }: InstallOptions): Promise<HarnessInstallResult> {
 		const steps: StepResult[] = [
-			await writeSkillFile(env, cursorSkillPath(home), skillMarkdown, dryRun),
+			...(await writeSkillFiles(
+				env,
+				skills,
+				(directoryName) => cursorSkillPath(home, directoryName),
+				dryRun,
+			)),
 			await writeMcpConfig(env, home, dryRun),
 		];
 

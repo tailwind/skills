@@ -3,6 +3,14 @@ import { describe, expect, it } from "vitest";
 import { createFakeEnv } from "../test-support/fake-env";
 import { cursorAdapter } from "./cursor";
 
+const SKILLS = [
+	{
+		name: "Pinterest scheduling",
+		directoryName: "tailwind-pinterest-scheduling",
+		markdown: "# skill",
+	},
+];
+
 const HOME = "/home/fake-user";
 const CONFIG_PATH = "/home/fake-user/.cursor/mcp.json";
 const SKILL_PATH = "/home/fake-user/.cursor/skills/tailwind-pinterest-scheduling/SKILL.md";
@@ -10,7 +18,7 @@ const SKILL_PATH = "/home/fake-user/.cursor/skills/tailwind-pinterest-scheduling
 describe("cursorAdapter", () => {
 	it("writes the skill file to the Cursor-specific path", async () => {
 		const { env, calls } = createFakeEnv();
-		await cursorAdapter.install(env, { home: HOME, skillMarkdown: "# skill", dryRun: false });
+		await cursorAdapter.install(env, { home: HOME, skills: SKILLS, dryRun: false });
 		expect(
 			calls.writeFile.some((call) => call.path === SKILL_PATH && call.content === "# skill"),
 		).toBe(true);
@@ -22,7 +30,7 @@ describe("cursorAdapter", () => {
 
 		const result = await cursorAdapter.install(env, {
 			home: HOME,
-			skillMarkdown: "# skill",
+			skills: SKILLS,
 			dryRun: false,
 		});
 
@@ -36,7 +44,7 @@ describe("cursorAdapter", () => {
 	it("creates ~/.cursor/mcp.json correctly when it does not exist yet", async () => {
 		const { env, files } = createFakeEnv();
 
-		await cursorAdapter.install(env, { home: HOME, skillMarkdown: "# skill", dryRun: false });
+		await cursorAdapter.install(env, { home: HOME, skills: SKILLS, dryRun: false });
 
 		const written = files.get(CONFIG_PATH);
 		expect(written).toBeDefined();
@@ -48,10 +56,10 @@ describe("cursorAdapter", () => {
 	it("re-running produces byte-identical mcp.json content the second time (idempotent)", async () => {
 		const { env, files } = createFakeEnv();
 
-		await cursorAdapter.install(env, { home: HOME, skillMarkdown: "# skill", dryRun: false });
+		await cursorAdapter.install(env, { home: HOME, skills: SKILLS, dryRun: false });
 		const firstContent = files.get(CONFIG_PATH);
 
-		await cursorAdapter.install(env, { home: HOME, skillMarkdown: "# skill", dryRun: false });
+		await cursorAdapter.install(env, { home: HOME, skills: SKILLS, dryRun: false });
 		const secondContent = files.get(CONFIG_PATH);
 
 		expect(secondContent).toBe(firstContent);
@@ -63,7 +71,7 @@ describe("cursorAdapter", () => {
 		});
 		const { env, files } = createFakeEnv({ files: { [CONFIG_PATH]: existing } });
 
-		await cursorAdapter.install(env, { home: HOME, skillMarkdown: "# skill", dryRun: false });
+		await cursorAdapter.install(env, { home: HOME, skills: SKILLS, dryRun: false });
 
 		const parsed = JSON.parse(files.get(CONFIG_PATH) as string);
 		expect(parsed.mcpServers.github).toEqual({ url: "https://github.example/mcp" });
@@ -78,7 +86,7 @@ describe("cursorAdapter", () => {
 			files: { [CONFIG_PATH]: '{"mcpServers":{"keep":{"url":"https://keep.example/mcp"}}}' },
 		});
 
-		await cursorAdapter.install(env, { home: HOME, skillMarkdown: "# skill", dryRun: false });
+		await cursorAdapter.install(env, { home: HOME, skills: SKILLS, dryRun: false });
 
 		const configWrites = calls.writeFile.filter((write) => write.path === CONFIG_PATH);
 		expect(configWrites).toHaveLength(0);
@@ -98,7 +106,7 @@ describe("cursorAdapter", () => {
 
 		const result = await cursorAdapter.install(env, {
 			home: HOME,
-			skillMarkdown: "# skill",
+			skills: SKILLS,
 			dryRun: false,
 		});
 
@@ -117,7 +125,7 @@ describe("cursorAdapter", () => {
 			modes: { [CONFIG_PATH]: 0o600 },
 		});
 
-		await cursorAdapter.install(env, { home: HOME, skillMarkdown: "# skill", dryRun: false });
+		await cursorAdapter.install(env, { home: HOME, skills: SKILLS, dryRun: false });
 
 		// Asserted at creation, not after: a chmod that follows the write leaves a
 		// window where the token-bearing file sits at the umask default, and a
@@ -132,7 +140,7 @@ describe("cursorAdapter", () => {
 	it("creates a brand-new config privately, since it can hold a bearer token", async () => {
 		const { env, calls } = createFakeEnv();
 
-		await cursorAdapter.install(env, { home: HOME, skillMarkdown: "# skill", dryRun: false });
+		await cursorAdapter.install(env, { home: HOME, skills: SKILLS, dryRun: false });
 
 		const tempWrite = calls.writeFile.find((write) => write.path.endsWith(".tmp"));
 		expect(tempWrite?.mode).toBe(0o600);
@@ -145,7 +153,7 @@ describe("cursorAdapter", () => {
 		const target = "/home/fake-user/dotfiles/cursor-mcp.json";
 		const { env, calls } = createFakeEnv({ symlinks: { [CONFIG_PATH]: target } });
 
-		await cursorAdapter.install(env, { home: HOME, skillMarkdown: "# skill", dryRun: false });
+		await cursorAdapter.install(env, { home: HOME, skills: SKILLS, dryRun: false });
 
 		expect(calls.rename).toContainEqual({ from: `${target}.tailwind-install.tmp`, to: target });
 		expect(calls.rename.some((call) => call.to === CONFIG_PATH)).toBe(false);
@@ -158,7 +166,7 @@ describe("cursorAdapter", () => {
 			symlinks: { [CONFIG_PATH]: target },
 		});
 
-		await cursorAdapter.install(env, { home: HOME, skillMarkdown: "# skill", dryRun: false });
+		await cursorAdapter.install(env, { home: HOME, skills: SKILLS, dryRun: false });
 
 		expect(calls.rename).toContainEqual({
 			from: `${target}.tailwind-install.tmp`,

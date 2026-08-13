@@ -5,7 +5,7 @@ import { fileURLToPath } from "node:url";
 
 import { describe, expect, it } from "vitest";
 
-import { getBundledSkillPath } from "./lib/skill-content";
+import { getBundledSkillPath, SKILL_MANIFEST } from "./lib/skills";
 
 // These read the committed files rather than the generator's output on purpose.
 // The marketplace pins to a commit in the public mirror and serves whatever is
@@ -116,10 +116,12 @@ describe("Claude Code plugin manifest", () => {
 	// The plugin discovers skills from <plugin root>/skills/, which is the same
 	// directory the installer copies SKILL.md out of, so a rename that missed one
 	// of the two would leave the plugin shipping a server and no guidance.
-	it("ships the bundled skill inside the directory the plugin loads skills from", () => {
-		const skillPath = getBundledSkillPath();
+	it("ships every manifested playbook inside the directory the plugin loads skills from", () => {
+		for (const entry of SKILL_MANIFEST) {
+			const skillPath = getBundledSkillPath(entry.directoryName);
 
-		expect(existsSync(skillPath)).toBe(true);
-		expect(path.relative(packageRoot, skillPath).split(path.sep)[0]).toBe("skills");
+			expect(existsSync(skillPath)).toBe(true);
+			expect(path.relative(packageRoot, skillPath).split(path.sep)[0]).toBe("skills");
+		}
 	});
 });

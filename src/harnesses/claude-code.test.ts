@@ -4,13 +4,21 @@ import { isAlreadyExistsFailure } from "../lib/existing-server";
 import { createFakeEnv } from "../test-support/fake-env";
 import { claudeCodeAdapter } from "./claude-code";
 
+const SKILLS = [
+	{
+		name: "Pinterest scheduling",
+		directoryName: "tailwind-pinterest-scheduling",
+		markdown: "# skill",
+	},
+];
+
 const HOME = "/home/fake-user";
 const SKILL_PATH = "/home/fake-user/.claude/skills/tailwind-pinterest-scheduling/SKILL.md";
 
 describe("claudeCodeAdapter", () => {
 	it("writes the skill file to the Claude Code-specific path", async () => {
 		const { env, calls } = createFakeEnv();
-		await claudeCodeAdapter.install(env, { home: HOME, skillMarkdown: "# skill", dryRun: false });
+		await claudeCodeAdapter.install(env, { home: HOME, skills: SKILLS, dryRun: false });
 		expect(
 			calls.writeFile.some((call) => call.path === SKILL_PATH && call.content === "# skill"),
 		).toBe(true);
@@ -27,7 +35,7 @@ describe("claudeCodeAdapter", () => {
 
 		const result = await claudeCodeAdapter.install(env, {
 			home: HOME,
-			skillMarkdown: "# skill",
+			skills: SKILLS,
 			dryRun: false,
 		});
 
@@ -43,7 +51,7 @@ describe("claudeCodeAdapter", () => {
 
 		const result = await claudeCodeAdapter.install(env, {
 			home: HOME,
-			skillMarkdown: "# skill",
+			skills: SKILLS,
 			dryRun: false,
 		});
 
@@ -71,7 +79,7 @@ describe("claudeCodeAdapter", () => {
 
 		const result = await claudeCodeAdapter.install(env, {
 			home: HOME,
-			skillMarkdown: "# skill",
+			skills: SKILLS,
 			dryRun: false,
 		});
 
@@ -90,7 +98,7 @@ describe("claudeCodeAdapter", () => {
 
 		const result = await claudeCodeAdapter.install(env, {
 			home: HOME,
-			skillMarkdown: "# skill",
+			skills: SKILLS,
 			dryRun: false,
 		});
 
@@ -110,7 +118,7 @@ describe("claudeCodeAdapter", () => {
 
 		const result = await claudeCodeAdapter.install(env, {
 			home: HOME,
-			skillMarkdown: "# skill",
+			skills: SKILLS,
 			dryRun: false,
 		});
 

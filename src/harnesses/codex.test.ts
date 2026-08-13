@@ -3,6 +3,14 @@ import { describe, expect, it } from "vitest";
 import { createFakeEnv } from "../test-support/fake-env";
 import { codexAdapter } from "./codex";
 
+const SKILLS = [
+	{
+		name: "Pinterest scheduling",
+		directoryName: "tailwind-pinterest-scheduling",
+		markdown: "# skill",
+	},
+];
+
 const HOME = "/home/fake-user";
 // Deliberately ~/.agents/skills, NOT ~/.codex/skills.
 const SKILL_PATH = "/home/fake-user/.agents/skills/tailwind-pinterest-scheduling/SKILL.md";
@@ -16,7 +24,7 @@ describe("codexAdapter", () => {
 					: { code: 0, stdout: "", stderr: "" },
 		});
 
-		await codexAdapter.install(env, { home: HOME, skillMarkdown: "# skill", dryRun: false });
+		await codexAdapter.install(env, { home: HOME, skills: SKILLS, dryRun: false });
 
 		expect(calls.writeFile.some((call) => call.path === SKILL_PATH)).toBe(true);
 	});
@@ -33,7 +41,7 @@ describe("codexAdapter", () => {
 
 		const result = await codexAdapter.install(env, {
 			home: HOME,
-			skillMarkdown: "# skill",
+			skills: SKILLS,
 			dryRun: false,
 		});
 
@@ -54,7 +62,7 @@ describe("codexAdapter", () => {
 
 		const result = await codexAdapter.install(env, {
 			home: HOME,
-			skillMarkdown: "# skill",
+			skills: SKILLS,
 			dryRun: false,
 		});
 
@@ -64,7 +72,7 @@ describe("codexAdapter", () => {
 
 	it("does not shell out at all in dry-run mode", async () => {
 		const { env, calls } = createFakeEnv();
-		await codexAdapter.install(env, { home: HOME, skillMarkdown: "# skill", dryRun: true });
+		await codexAdapter.install(env, { home: HOME, skills: SKILLS, dryRun: true });
 		expect(calls.execFile).toHaveLength(0);
 	});
 
@@ -78,7 +86,7 @@ describe("codexAdapter", () => {
 
 		const result = await codexAdapter.install(env, {
 			home: HOME,
-			skillMarkdown: "# skill",
+			skills: SKILLS,
 			dryRun: false,
 		});
 

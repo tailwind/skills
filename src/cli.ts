@@ -3,7 +3,7 @@ import { codexAdapter } from "./harnesses/codex";
 import { cursorAdapter } from "./harnesses/cursor";
 import type { HarnessAdapter, HarnessId, HarnessInstallResult } from "./harnesses/types";
 import type { Env } from "./lib/env";
-import { getBundledSkillPath } from "./lib/skill-content";
+import { loadBundledSkills } from "./lib/skills";
 
 export const ADAPTERS: readonly HarnessAdapter[] = [claudeCodeAdapter, cursorAdapter, codexAdapter];
 const VALID_IDS: readonly HarnessId[] = ADAPTERS.map((adapter) => adapter.id);
@@ -220,16 +220,23 @@ export async function run(
 		return 0;
 	}
 
-	const skillMarkdown = await env.readFile(getBundledSkillPath());
-	if (skillMarkdown === undefined) {
-		io.write("Could not read the bundled SKILL.md — installation aborted.\n");
+	// Loaded before any harness is touched, and all-or-nothing: installing the
+	// readable subset would leave a partial install that reports success while
+	// silently missing a playbook.
+	const loaded = await loadBundledSkills(env);
+	if (!loaded.ok) {
+		io.write(
+			`Could not read the bundled playbook${loaded.missing.length === 1 ? "" : "s"}: ${loaded.missing.join(", ")}.\nNothing was written — installation aborted.\n`,
+		);
 		return 1;
 	}
 
 	const results: HarnessInstallResult[] = [];
 	for (const adapter of selected) {
 		try {
-			results.push(await adapter.install(env, { home, skillMarkdown, dryRun: options.dryRun }));
+			results.push(
+				await adapter.install(env, { home, skills: loaded.skills, dryRun: options.dryRun }),
+			);
 		} catch (error) {
 			// One unwritable directory should not cost the user every other
 			// harness, nor discard the report of what already succeeded. Record the

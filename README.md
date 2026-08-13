@@ -1,10 +1,10 @@
 # @tailwind-app/skills
 
 Connects your coding agent to [Tailwind](https://www.tailwindapp.com) and teaches it how to
-schedule Pinterest Pins.
+schedule Pinterest Pins and audit a Pinterest account.
 
-One command installs two things: the Tailwind MCP server config, and a skill playbook that
-covers the parts of the API an agent gets wrong on its own.
+One command installs two things: the Tailwind MCP server config, and a set of skill playbooks
+covering the parts of the API an agent gets wrong on its own.
 
 ```bash
 npx @tailwind-app/skills
@@ -17,11 +17,19 @@ Supported harnesses: **Claude Code**, **Cursor**, and **Codex**.
 The installer detects which harnesses you have, asks before touching anything, and prints
 every path it wrote. Nothing else is modified.
 
-| Harness | Skill playbook | MCP server config |
+Each bundled playbook is written to its own directory, one `SKILL.md` per playbook:
+
+| Harness | Skill playbooks | MCP server config |
 | --- | --- | --- |
-| Claude Code | `~/.claude/skills/tailwind-pinterest-scheduling/SKILL.md` | via `claude mcp add --scope user` |
-| Cursor | `~/.cursor/skills/tailwind-pinterest-scheduling/SKILL.md` | merged into `~/.cursor/mcp.json` |
-| Codex | `~/.agents/skills/tailwind-pinterest-scheduling/SKILL.md` | via `codex mcp add` |
+| Claude Code | `~/.claude/skills/<playbook>/SKILL.md` | via `claude mcp add --scope user` |
+| Cursor | `~/.cursor/skills/<playbook>/SKILL.md` | merged into `~/.cursor/mcp.json` |
+| Codex | `~/.agents/skills/<playbook>/SKILL.md` | via `codex mcp add` |
+
+Currently shipping: `tailwind-pinterest-scheduling`, `tailwind-pinterest-profile-audit`,
+`tailwind-pinterest-board-audit`.
+
+If any bundled playbook cannot be read, the installer stops before writing anything rather
+than leaving a partial install that reports success.
 
 For Claude Code and Codex the installer calls each tool's own CLI rather than editing config
 files directly, so their merge semantics are theirs, not ours. Cursor has no equivalent
@@ -93,8 +101,9 @@ To read the playbook before installing anything, without running the installer a
 npm view @tailwind-app/skills dist.tarball
 ```
 
-Or browse the exact file that gets installed at
-[unpkg.com/@tailwind-app/skills/skills/tailwind-pinterest-scheduling/SKILL.md](https://unpkg.com/@tailwind-app/skills/skills/tailwind-pinterest-scheduling/SKILL.md).
+Or browse the exact files that get installed under
+[unpkg.com/@tailwind-app/skills/skills/](https://unpkg.com/browse/@tailwind-app/skills/skills/) —
+one `SKILL.md` per playbook listed above.
 
 Releases are published from this repository's own CI with
 [npm provenance](https://docs.npmjs.com/generating-provenance-statements), so each published
