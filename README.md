@@ -10,7 +10,7 @@ covering the parts of the API an agent gets wrong on its own.
 npx @tailwind-app/skills
 ```
 
-Supported harnesses: **Claude Code**, **Cursor**, and **Codex**.
+Supported harnesses: **Claude Code**, **Cursor**, **Codex**, and **OpenCode**.
 
 ## What it writes
 
@@ -24,6 +24,7 @@ Each bundled playbook is written to its own directory, one `SKILL.md` per playbo
 | Claude Code | `~/.claude/skills/<playbook>/SKILL.md` | via `claude mcp add --scope user` |
 | Cursor | `~/.cursor/skills/<playbook>/SKILL.md` | merged into `~/.cursor/mcp.json` |
 | Codex | `~/.agents/skills/<playbook>/SKILL.md` | via `codex mcp add` |
+| OpenCode | `$XDG_CONFIG_HOME/opencode/skills/<playbook>/SKILL.md` (`~/.config/opencode/...` by default) | via `opencode mcp add` |
 
 Currently shipping: `tailwind-pinterest-scheduling`, `tailwind-pinterest-profile-audit`,
 `tailwind-pinterest-board-audit`.
@@ -31,15 +32,31 @@ Currently shipping: `tailwind-pinterest-scheduling`, `tailwind-pinterest-profile
 If any bundled playbook cannot be read, the installer stops before writing anything rather
 than leaving a partial install that reports success.
 
-For Claude Code and Codex the installer calls each tool's own CLI rather than editing config
-files directly, so their merge semantics are theirs, not ours. Cursor has no equivalent
+For Claude Code, Codex, and OpenCode the installer calls each tool's own CLI rather than editing
+config files directly, so their merge semantics are theirs, not ours. Cursor has no equivalent
 command, so its `mcp.json` is edited in place — reading the existing file, adding only the
 `tailwind` key under `mcpServers`, and leaving every other server and top-level key untouched.
 If that file contains invalid JSON, the installer reports it and stops rather than overwriting
 something it could not parse.
 
+OpenCode's `mcp add` differs from the other two in one way that matters: it replaces an existing
+`tailwind` entry instead of refusing. So before calling it the installer reads your OpenCode
+config, and leaves it alone if a server called `tailwind` already points somewhere else, or if
+the file cannot be parsed. An entry already pointing at Tailwind is left as-is too, since
+rewriting it would drop any `enabled` or `timeout` you had set on it.
+
+OpenCode's config directory follows `$OPENCODE_CONFIG_DIR` or `$XDG_CONFIG_HOME` when either is
+set, and the installer resolves both the config file it checks and the skill files it writes the
+same way — never assuming `~/.config`.
+
+This check only covers OpenCode's global config. OpenCode also reads a project-local
+`opencode.json` (or `.opencode/opencode.json`) that overrides the global one, and the installer
+has no reliable way to find one from here — so a project's own `tailwind` entry can silently
+shadow what this installer just wrote. If Tailwind doesn't connect after installing, check
+whether the current project defines its own `mcp.tailwind`.
+
 After installing, restart your agent. Skill files are picked up live by Claude Code and Cursor,
-but all three read MCP server config at startup, and Cursor needs a **Reload Window**.
+but all four read MCP server config at startup, and Cursor needs a **Reload Window**.
 
 ## Claude plugin
 
@@ -58,7 +75,7 @@ a plugin install adds a remote server and a Markdown file, nothing that runs loc
 
 ```
 --yes                 Non-interactive: install into every detected harness
---harness <name>      Install into a specific harness (claude-code, cursor, codex).
+--harness <name>      Install into a specific harness (claude-code, cursor, codex, opencode).
                       Repeatable, or comma-separated. Skips detection and the prompt.
 --dry-run             Print what would be written; change nothing
 --help                Show help

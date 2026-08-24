@@ -27,6 +27,8 @@ export type FakeEnvInit = {
 	symlinks?: Record<string, string>;
 	/** Seed permission bits per path. */
 	modes?: Record<string, number>;
+	/** Seed environment variables read via `getEnv`. */
+	env?: Record<string, string>;
 };
 
 /**
@@ -57,6 +59,7 @@ export function createFakeEnv(init: FakeEnvInit = {}) {
 		homedir: () => init.homedir ?? "/home/fake-user",
 		pathDirs: () => init.pathDirs ?? ["/usr/local/bin", "/usr/bin"],
 		pathExt: () => init.pathExt ?? [""],
+		getEnv: (name) => init.env?.[name],
 		async fileExists(path) {
 			const resolved = symlinks.get(path) ?? path;
 			return files.has(resolved) || existingPaths.has(resolved);

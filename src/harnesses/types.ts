@@ -1,7 +1,7 @@
 import type { Env } from "../lib/env";
 import type { LoadedSkill } from "../lib/skills";
 
-export type HarnessId = "claude-code" | "cursor" | "codex";
+export type HarnessId = "claude-code" | "cursor" | "codex" | "opencode";
 
 export type StepStatus = "written" | "would-write" | "skipped" | "failed";
 

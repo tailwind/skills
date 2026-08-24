@@ -16,6 +16,8 @@ export interface Env {
 	homedir(): string;
 	/** Directories on PATH, in search order. */
 	pathDirs(): string[];
+	/** A single environment variable, or `undefined` when unset. */
+	getEnv(name: string): string | undefined;
 	/** Executable suffixes to try per PATH dir (`[""]` on POSIX, `[".EXE", ".CMD", ...]` on Windows). */
 	pathExt(): string[];
 	/** True if a regular file exists (does not imply readability or executability). */

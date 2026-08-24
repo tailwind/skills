@@ -32,6 +32,9 @@ export function createNodeEnv(): Env {
 		pathDirs() {
 			return (process.env.PATH ?? "").split(delimiter).filter((entry) => entry.length > 0);
 		},
+		getEnv(name) {
+			return process.env[name];
+		},
 		pathExt() {
 			if (process.platform !== "win32") return [""];
 			return (process.env.PATHEXT ?? ".EXE;.CMD;.BAT")

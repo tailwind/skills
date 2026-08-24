@@ -34,6 +34,19 @@ export const CODEX_MCP_ADD_ARGS = [
 ] as const;
 
 /**
+ * Args passed to `opencode` (excluding the binary itself) to add the Tailwind
+ * MCP server. Supplying the name positionally alongside `--url` is what selects
+ * OpenCode's non-interactive path; without a name it opens a prompt wizard.
+ */
+export const OPENCODE_MCP_ADD_ARGS = [
+	"mcp",
+	"add",
+	"tailwind",
+	"--url",
+	"https://mcp.tailwind.ai",
+] as const;
+
+/**
  * Value merged into `mcpServers.tailwind` in `~/.cursor/mcp.json`.
  * Bare `url`, deliberately with NO `type` discriminator — Cursor differs
  * from Claude Code (which requires `"type": "http"`) here.

@@ -1,11 +1,17 @@
 import { claudeCodeAdapter } from "./harnesses/claude-code";
 import { codexAdapter } from "./harnesses/codex";
 import { cursorAdapter } from "./harnesses/cursor";
+import { opencodeAdapter } from "./harnesses/opencode";
 import type { HarnessAdapter, HarnessId, HarnessInstallResult } from "./harnesses/types";
 import type { Env } from "./lib/env";
 import { loadBundledSkills } from "./lib/skills";
 
-export const ADAPTERS: readonly HarnessAdapter[] = [claudeCodeAdapter, cursorAdapter, codexAdapter];
+export const ADAPTERS: readonly HarnessAdapter[] = [
+	claudeCodeAdapter,
+	cursorAdapter,
+	codexAdapter,
+	opencodeAdapter,
+];
 const VALID_IDS: readonly HarnessId[] = ADAPTERS.map((adapter) => adapter.id);
 
 export type Io = Readonly<{
@@ -31,7 +37,7 @@ Installs the Tailwind MCP server and skill playbook into your coding agent.
 
 Options:
   --yes                 Non-interactive: install into every detected harness
-  --harness <name>       Install into a specific harness (claude-code, cursor, codex).
+  --harness <name>       Install into a specific harness (claude-code, cursor, codex, opencode).
                          Repeatable, or comma-separated. Skips detection and the prompt.
   --dry-run              Print what would be written; change nothing
   --help                 Show this help
@@ -104,6 +110,7 @@ function noHarnessDetectedMessage(): string {
 		"  Claude Code — `claude` on PATH, or ~/.claude",
 		"  Cursor      — ~/.cursor",
 		"  Codex       — `codex` on PATH, or ~/.codex",
+		"  OpenCode    — `opencode` on PATH, or ~/.config/opencode",
 		"",
 		"Nothing was written. Install one of these tools, or pass --harness <name> to force a target.",
 		"",

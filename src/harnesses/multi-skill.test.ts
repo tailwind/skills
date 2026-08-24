@@ -3,6 +3,7 @@ import { createFakeEnv } from "../test-support/fake-env";
 import { claudeCodeAdapter } from "./claude-code";
 import { codexAdapter } from "./codex";
 import { cursorAdapter } from "./cursor";
+import { opencodeAdapter } from "./opencode";
 import type { HarnessAdapter } from "./types";
 
 const HOME = "/home/fake-user";
@@ -35,6 +36,7 @@ const ADAPTERS: Array<{ adapter: HarnessAdapter; skillsRoot: string }> = [
 	{ adapter: claudeCodeAdapter, skillsRoot: `${HOME}/.claude/skills` },
 	{ adapter: cursorAdapter, skillsRoot: `${HOME}/.cursor/skills` },
 	{ adapter: codexAdapter, skillsRoot: `${HOME}/.agents/skills` },
+	{ adapter: opencodeAdapter, skillsRoot: `${HOME}/.config/opencode/skills` },
 ];
 
 describe.each(ADAPTERS)("$adapter.label installs every playbook", ({ adapter, skillsRoot }) => {

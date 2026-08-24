@@ -4,7 +4,7 @@ import type { Env } from "../lib/env";
 import type { LoadedSkill } from "../lib/skills";
 import type { StepResult } from "./types";
 
-/** Shared by all three harness adapters: write SKILL.md to its per-harness path. */
+/** Shared by every harness adapter: write SKILL.md to its per-harness path. */
 export async function writeSkillFile(
 	env: Env,
 	filePath: string,
