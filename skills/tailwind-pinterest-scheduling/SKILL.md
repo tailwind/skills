@@ -39,36 +39,53 @@ the URI with a literal `{accountId}` placeholder, and reading that string
 verbatim will not return the user's Boards. `list_boards` needs no such care,
 which is why it is the better route.
 
-## Get the copy right before you create anything
+## Board sections and several Boards at once
 
-There is no tool to edit a Pin once it exists. `schedule_post` changes only the
-time and the Board; `create_post` always makes a *new* Pin. So a draft with the
-wrong title, description, media, or destination URL cannot be corrected through
-these tools — the only route is `delete_post` and start again.
+To publish into a section of a Board, pass `boardSectionId` alongside
+`boardId`. Section IDs come from `list_board_sections`. A section only belongs
+to its own Board, so moving a Pin with `boardId` alone clears whatever section
+it was in.
 
-Confirm the copy and the media with the user **before** calling `create_post`.
-Do not save a rough draft intending to refine it later.
+To put one Pin on several Boards, pass `intervalBoards` (in publishing order)
+plus `intervalType` in place of `boardId`, on a single scheduled `create_post`
+call. Tailwind spaces the Boards out over time. Calling `create_post` once per
+Board instead publishes them all at once. Each Board becomes its own scheduled
+Pin and is charged like any other scheduled Pin (see credits below).
 
-The Board is the exception, and the one thing you can safely defer: `boardId`
-can be supplied later when you call `schedule_post`.
+## Drafts, scheduling, and editing
 
-`create_post` without `sendAt` saves a draft, which is right when the timing is
-undecided but the content is settled. Adding `sendAt` schedules it, and makes
-`title`, `description`, `url`, and `boardId` all mandatory. `schedule_post`
-moves an existing draft or queued Pin to a time and expects `title`,
-`description`, and `url` to already be set.
+A `create_post` call that omits both `sendAt` and `useNextOpenSlot` saves a
+draft, which is right when the timing is undecided. To schedule in the same
+call, pass **exactly one** of them, plus `title`, `description`, `url`, and
+`boardId` (or `intervalBoards`). `schedule_post` puts an existing draft or
+queued Pin on the schedule with the same one-of choice, and expects `title`,
+`description`, and `url` to already be set. A draft saved without a Board also
+needs `boardId` on that `schedule_post` call.
+
+Prefer `useNextOpenSlot: true` unless the user named a specific time. It takes
+the account's next open smart schedule slot and applies the account's Pin
+Spacing rules for the destination URL, which a timestamp you invent cannot.
+Never compute a `sendAt` from `list_timeslots`. Reserve `sendAt` (ISO 8601, in
+the future) for a time the user actually asked for.
 
 After scheduling, confirm it landed with `list_posts` using `status: "queued"`
 rather than assuming success from the tool's response text.
 
-`sendAt` is ISO 8601 and must be in the future. Ask the user for their intended
-time and time zone instead of inventing one.
+To fix a draft or queued Pin's title, description, link, Board, section, alt
+text, or product tags, use `update_post`. It is free and never changes when the
+Pin publishes. Do not delete and recreate a Pin to fix a typo. The image is the
+exception: `update_post` cannot change it, so a new image means `delete_post`
+plus a fresh `create_post`. Pins that Tailwind's AI designed have their own
+design tools, starting with `get_pin_design`. Published Pins can't be edited
+through Tailwind at all.
 
 ## Scheduling spends the user's credits
 
-Moving a Pin to scheduled consumes a Pin-scheduling credit from the user's plan.
-Saving a draft does not, and rescheduling an already-queued Pin is not charged
-again.
+On modular-billing accounts, moving a Pin to scheduled consumes a Pin credit
+(or free-trial allowance). Winback plans schedule free, and legacy and Shopify
+accounts spend no credits; each Pin counts against their plan's post limit
+instead. Saving a draft is always free, and rescheduling an already-queued Pin
+is not charged again.
 
 Two consequences worth respecting: don't schedule speculatively to "see if it
 works" — create a draft instead. And if a call comes back as a payment-required
@@ -81,7 +98,10 @@ rather than trying again.
 - **Rejected board ID** — you almost certainly passed a name or URL. Call
   `list_boards` and use an ID from the response.
 - **Missing required field on a scheduled Pin** — `title`, `description`, `url`,
-  and `boardId` are only required once `sendAt` is present. Either supply them or
-  save a draft instead.
+  and a Board are required once `sendAt` or `useNextOpenSlot` is present. Either
+  supply them, or drop both timing fields to save a draft instead.
+- **`intervalBoards` rejected** — it also needs `intervalType` and one of
+  `sendAt` or `useNextOpenSlot`, and it can't be combined with `boardId`. A draft
+  can't use it: to save a draft, pass a single `boardId` or no Board at all.
 - **`delete_post` fails** — it only works on Pins that have not published yet.
   Published Pins have to be removed from Pinterest directly.
