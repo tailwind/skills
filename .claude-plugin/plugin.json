@@ -8,6 +8,7 @@
 		"url": "https://www.tailwindapp.com"
 	},
 	"homepage": "https://github.com/tailwind/skills#readme",
-	"repository": "git+https://github.com/tailwind/skills.git",
-	"license": "MIT"
+	"repository": "https://github.com/tailwind/skills",
+	"license": "MIT",
+	"privacyPolicyUrl": "https://www.tailwindapp.com/about/privacy"
 }

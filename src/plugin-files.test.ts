@@ -24,6 +24,7 @@ const pluginManifest = readJson(".claude-plugin/plugin.json") as {
 	homepage: string;
 	repository: string;
 	license: string;
+	privacyPolicyUrl: string;
 };
 const mcpConfig = readJson(".mcp.json") as {
 	mcpServers: Record<string, { type?: string; url?: string; command?: string }>;
@@ -101,14 +102,32 @@ describe("Claude Code plugin manifest", () => {
 		expect(pluginManifest.name).toBe("tailwind");
 	});
 
-	// homepage/repository/license are copied straight from package.json by
-	// design (same repo backs both listings) rather than derived or checked
-	// elsewhere — this is the only thing that would catch one of them going
-	// stale if package.json changed without codegen being re-run.
+	// homepage/repository/license come from package.json by design (same repo
+	// backs both listings) rather than derived or checked elsewhere — this is
+	// the only thing that would catch one of them going stale if package.json
+	// changed without codegen being re-run.
 	it("mirrors package.json's homepage, repository, and license", () => {
 		expect(pluginManifest.homepage).toBe(packageManifest.homepage);
-		expect(pluginManifest.repository).toBe(packageManifest.repository.url);
+		expect(`git+${pluginManifest.repository}.git`).toBe(packageManifest.repository.url);
 		expect(pluginManifest.license).toBe(packageManifest.license);
+	});
+
+	// The Claude directory rejects npm's `git+https://…git` form ("Use an
+	// https:// URL") even though package.json needs it.
+	it("gives the directory a plain https repository URL", () => {
+		expect(pluginManifest.repository).toMatch(/^https:\/\/github\.com\/[^/]+\/[^/]+$/);
+	});
+
+	// The directory flags any plugin that reaches a remote MCP server without
+	// declaring a privacy policy.
+	it("declares a privacy policy URL", () => {
+		expect(pluginManifest.privacyPolicyUrl).toMatch(/^https:\/\//);
+	});
+
+	// With no icon the directory falls back to the publisher's GitHub avatar.
+	// It looks for this exact path; the mirror copies .claude-plugin/ whole.
+	it("ships a listing icon at the path the directory looks for", () => {
+		expect(existsSync(path.join(packageRoot, ".claude-plugin", "icon.svg"))).toBe(true);
 	});
 
 	// The playbook is the reason this plugin exists — an MCP server alone is
