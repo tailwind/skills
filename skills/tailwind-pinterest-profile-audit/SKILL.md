@@ -11,9 +11,9 @@ nothing, and changes nothing.
 
 It is also narrow, and the narrowness is the point. Users asking for an
 "account audit" usually want to know why their impressions are low. That
-question cannot be answered from this data, and guessing at it from the fields
-below produces confident advice built on nothing. Report what the checks show,
-then say plainly what this audit cannot see.
+question cannot be answered from the profile fields below, and guessing at it
+from them produces confident advice built on nothing. Report what the checks
+show, then say plainly what this audit cannot see.
 
 ## Run the checks
 
@@ -83,9 +83,11 @@ user reading both should be able to tell where each claim came from.
 State these explicitly rather than leaving them unmentioned — an unmentioned
 gap reads as a clean bill of health:
 
-- **Performance of any kind.** Impressions, saves, outbound clicks, follower
-  counts, and profile visits are not exposed here. If the user asked why their
-  numbers are low, this audit cannot answer that.
+- **Performance of any kind.** Impressions, saves, clicks and engagement are
+  not part of this audit. `get_account_analytics` reports them for the account
+  and `list_top_pins` shows which Pins did best; offer those when the user
+  asks why their numbers are low. Their figures describe what happened, not
+  why, so they do not license a cause either.
 - **Profile content quality.** Bio text, board cover imagery, and whether the
   profile reads well for a niche are not visible.
 - **Pinterest-side account standing.** Whether the account is in good standing,

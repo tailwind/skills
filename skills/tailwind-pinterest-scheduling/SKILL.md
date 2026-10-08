@@ -65,8 +65,10 @@ needs `boardId` on that `schedule_post` call.
 Prefer `useNextOpenSlot: true` unless the user named a specific time. It takes
 the account's next open smart schedule slot and applies the account's Pin
 Spacing rules for the destination URL, which a timestamp you invent cannot.
-Never compute a `sendAt` from `list_timeslots`. Reserve `sendAt` (ISO 8601, in
-the future) for a time the user actually asked for.
+Never compute a `sendAt` from `list_timeslots`. Reserve `sendAt` for a time the
+user actually asked for. It must be a future UTC instant ending in `Z`, such as
+`2026-01-15T15:00:00Z`: a local-offset time like `2026-01-15T09:00:00-06:00` is
+rejected as an invalid datetime, so convert the user's local time to UTC first.
 
 After scheduling, confirm it landed with `list_posts` using `status: "queued"`
 rather than assuming success from the tool's response text.

@@ -18,7 +18,8 @@ names is the failure mode this audit is written to prevent.
 ## Gather the data
 
 1. `list_accounts` — resolve the account. Ask which one if there are several.
-2. `list_boards` — every board, with `isSecret` and `isCollaborator`.
+2. `list_boards` — every board, with `isSecret`, `isCollaborator`, its
+   description when it has one, `followerCount`, and `pinCount`.
 3. `list_board_lists` — the account's board lists and their ordered entries.
 4. `list_timeslots` — the configured publishing schedule.
 
@@ -47,6 +48,14 @@ the user can act.
 **Duplicate names.** Report exact duplicates, and names that differ only by
 case or whitespace. These are genuinely confusing when picking a board to
 publish to, and they are unambiguous to detect.
+
+**Missing descriptions.** Boards with no description. `list_boards` leaves
+the field out entirely for those boards, so a missing field is the finding.
+Report them by name.
+
+**Pin counts.** Boards with a `pinCount` of zero. The count comes from a
+cached snapshot and can lag behind Pinterest, so treat it as a lower bound:
+say a board *may* be empty, not that it is.
 
 **Board list coverage.** Boards present in `list_boards` but absent from every
 board list. These are boards no grouping publishes to.
@@ -108,22 +117,23 @@ somebody else's. Never merge counts from the two sources into one figure.
 
 Say these explicitly:
 
-- **Board descriptions.** Not exposed for the user's own boards. `list_boards`
-  returns id, name, secret, and collaborator status — nothing else.
-- **Empty or stale boards.** Pin counts and last-pinned dates are not available
-  for the user's own boards, so "this board is empty" and "you haven't pinned
-  here in months" cannot be determined. The pin counts in the benchmark section
-  are other people's boards and are not a substitute.
+- **Stale boards.** Last-pinned dates are not available, so "you haven't
+  pinned here in months" cannot be determined. The Pin counts in the benchmark
+  section are other people's boards and say nothing about the user's.
 - **Actual posting cadence.** Timeslots are the *configured* schedule, not
   observed publishing history. A full slot list does not mean Pins went out.
 - **Board lists holding no boards.** `list_board_lists` only returns lists with
   boards in them, so an empty list is indistinguishable from one that was never
   created. Never state that an account has no board lists configured.
 - **Private boards of other accounts.** The scrape path sees public boards only.
-- **Board-to-keyword relevance.** There is no relevance or quality score here.
-  Do not infer one from board names.
-- **Performance.** Saves, impressions, clicks, and which boards perform best
-  are not available.
+- **Board-to-keyword relevance.** This audit does not score it, and it must
+  not be inferred from board names. `get_board_keyword_relevance` scores one
+  board's live Pins against a keyword, but each scored call spends a plan
+  credit, so offer it for the boards the user cares about rather than running
+  it as part of the audit.
+- **Performance.** Saves, impressions and clicks are not part of this audit.
+  `list_top_pins` returns each top Pin's `boardId`, which is how to compare
+  boards by performance when the user asks; it costs nothing.
 
 When the user asks for one of these, name the gap and stop. Do not answer it
 with a proxy — "you have 40 boards and only 12 in a list, so your reach is
