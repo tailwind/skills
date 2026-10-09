@@ -90,6 +90,13 @@ These are **other people's public boards**, scraped from Pinterest. They are
 context for how boards in a niche are named and sized. They are not the user's
 boards, and their board ids cannot be used for scheduling.
 
+Group boards are not Tailwind Communities. Communities (formerly Tribes) has no
+MCP tool. Tailwind is replacing it with Turbo Groups, which has no tool either;
+the user finds their Turbo Groups under My Groups in Turbo, in the Tailwind app.
+A request for either one is a missing capability that `request_capability`
+records; Pinterest group boards (`list_group_boards`) are a different feature
+and do not answer it.
+
 The benchmark is optional in the strict sense: the audit must be complete and
 useful without it. If the scrape path returns nothing at any keyword, produce
 the full API-only report and note that benchmark context was unavailable.
