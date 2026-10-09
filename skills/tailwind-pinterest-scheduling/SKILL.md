@@ -70,6 +70,13 @@ user actually asked for. It must be a future UTC instant ending in `Z`, such as
 `2026-01-15T15:00:00Z`: a local-offset time like `2026-01-15T09:00:00-06:00` is
 rejected as an invalid datetime, so convert the user's local time to UTC first.
 
+An explicit `sendAt` only sets the Pin's first publish time. It is not an
+exemption from Pin Spacing: a later respace or schedule shuffle can still move
+the Pin, and no tool can lock it in place. To see how far apart Pins to a URL
+will land, call `get_pin_spacing_rule` with that URL, or
+`list_pin_spacing_rules` for every rule on the account. The rules themselves
+can only be changed in the Tailwind dashboard.
+
 After scheduling, confirm it landed with `list_posts` using `status: "queued"`
 rather than assuming success from the tool's response text.
 
