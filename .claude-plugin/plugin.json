@@ -1,7 +1,7 @@
 {
 	"$schema": "https://anthropic.com/claude-code/plugin.schema.json",
 	"name": "tailwind",
-	"version": "0.2.4",
+	"version": "0.2.5",
 	"description": "Create, schedule, and review Pinterest Pins with Tailwind.",
 	"author": {
 		"name": "Tailwind",

@@ -88,6 +88,12 @@ plus a fresh `create_post`. Pins that Tailwind's AI designed have their own
 design tools, starting with `get_pin_design`. Published Pins can't be edited
 through Tailwind at all.
 
+To take a queued Pin off the schedule without losing it, for example to hold
+back a time-sensitive Pin, use `unschedule_post`. The Pin goes back to draft with
+its image, copy and Board intact, and the credit charged for scheduling it is
+returned where one was taken. Scheduling it again charges again. Do not
+`delete_post` a queued Pin just to stop it publishing.
+
 ## Scheduling spends the user's credits
 
 On modular-billing accounts, moving a Pin to scheduled consumes a Pin credit
