@@ -55,7 +55,11 @@ Pin and is charged like any other scheduled Pin (see credits below).
 ## Drafts, scheduling, and editing
 
 A `create_post` call that omits both `sendAt` and `useNextOpenSlot` saves a
-draft, which is right when the timing is undecided. To schedule in the same
+draft, which is right when the timing is undecided. The draft is saved in
+Tailwind only: nothing is created on Pinterest, so it does not appear in
+Pinterest's own drafts or on the user's profile. It enters Tailwind's
+publishing flow only once it is scheduled with `schedule_post`, so never tell
+the user to look for it on Pinterest. To schedule in the same
 call, pass **exactly one** of them, plus `title`, `description`, `url`, and
 `boardId` (or `intervalBoards`). `schedule_post` puts an existing draft or
 queued Pin on the schedule with the same one-of choice, and expects `title`,
