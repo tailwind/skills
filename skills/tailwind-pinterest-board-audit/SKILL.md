@@ -1,6 +1,6 @@
 ---
 name: tailwind-pinterest-board-audit
-description: Audit how a connected Pinterest account's boards are organized through Tailwind — naming consistency, board list coverage, dead list entries, and publishing timeslots, with optional public group board benchmarks. Use when the user asks for a board audit or wants to review their board setup.
+description: Audit how a connected Pinterest account's boards are organized through Tailwind — naming consistency, stale boards, board list coverage, dead list entries, and publishing timeslots, with optional public group board benchmarks. Use when the user asks for a board audit or wants to review their board setup.
 ---
 
 # Pinterest board organization audit
@@ -19,7 +19,8 @@ names is the failure mode this audit is written to prevent.
 
 1. `list_accounts` — resolve the account. Ask which one if there are several.
 2. `list_boards` — every board, with `isSecret`, `isCollaborator`, its
-   description when it has one, `followerCount`, and `pinCount`.
+   description when it has one, `followerCount`, `pinCount`, and
+   `pinsModifiedAt` when Pinterest has one.
 3. `list_board_lists` — the account's board lists and their ordered entries.
 4. `list_timeslots` — the configured publishing schedule.
 
@@ -56,6 +57,15 @@ Report them by name.
 **Pin counts.** Boards with a `pinCount` of zero. The count comes from a
 cached snapshot and can lag behind Pinterest, so treat it as a lower bound:
 say a board *may* be empty, not that it is.
+
+**Stale boards.** Boards whose `pinsModifiedAt` is more than 90 days before
+today. `pinsModifiedAt` is when Pinterest last recorded a change to the
+board's Pins (ISO 8601; the text output shows it as "Pins last changed").
+It is a last-activity date, not the date of the newest Pin: Pinterest does
+not say which changes move it. Ninety days is a heuristic, not a Pinterest
+rule, so say so, and report each stale board by name with its date. A board
+with no `pinsModifiedAt` has unknown activity: count those separately and
+never report them as stale.
 
 **Board list coverage.** Boards present in `list_boards` but absent from every
 board list. These are boards no grouping publishes to.
@@ -124,9 +134,10 @@ somebody else's. Never merge counts from the two sources into one figure.
 
 Say these explicitly:
 
-- **Stale boards.** Last-pinned dates are not available, so "you haven't
-  pinned here in months" cannot be determined. The Pin counts in the benchmark
-  section are other people's boards and say nothing about the user's.
+- **When the last Pin was added.** `pinsModifiedAt` is the last recorded
+  change to a board's Pins, not the newest Pin's date, so "your last Pin here
+  was on this date" cannot be stated. The benchmark section describes other
+  people's boards and says nothing about the user's.
 - **Actual posting cadence.** Timeslots are the *configured* schedule, not
   observed publishing history. A full slot list does not mean Pins went out.
 - **Board lists holding no boards.** `list_board_lists` only returns lists with
