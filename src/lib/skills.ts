@@ -30,6 +30,7 @@ export const SKILL_MANIFEST: readonly SkillManifestEntry[] = [
 	{ name: "Pinterest scheduling", directoryName: "tailwind-pinterest-scheduling" },
 	{ name: "Pinterest profile audit", directoryName: "tailwind-pinterest-profile-audit" },
 	{ name: "Pinterest board audit", directoryName: "tailwind-pinterest-board-audit" },
+	{ name: "Pinterest draft review", directoryName: "tailwind-pinterest-draft-review" },
 ];
 
 /**

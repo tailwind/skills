@@ -27,7 +27,7 @@ Each bundled playbook is written to its own directory, one `SKILL.md` per playbo
 | OpenCode | `$XDG_CONFIG_HOME/opencode/skills/<playbook>/SKILL.md` (`~/.config/opencode/...` by default) | via `opencode mcp add` |
 
 Currently shipping: `tailwind-pinterest-scheduling`, `tailwind-pinterest-profile-audit`,
-`tailwind-pinterest-board-audit`.
+`tailwind-pinterest-board-audit`, `tailwind-pinterest-draft-review`.
 
 If any bundled playbook cannot be read, the installer stops before writing anything rather
 than leaving a partial install that reports success.
