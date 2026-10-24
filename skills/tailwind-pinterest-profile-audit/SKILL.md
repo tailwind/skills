@@ -23,12 +23,13 @@ If the user has more than one connected account and hasn't said which, ask
 rather than auditing all of them — a report about the wrong profile reads as
 authoritative and wastes the user's time acting on it.
 
-Check each field below. A field that is present and non-empty is a healthy
-check; a field that is missing or false is a finding.
+Check each field below against its healthy value. A field that is missing,
+false, or not the healthy value is a finding, with one exception:
+`tokenStatus: "unknown"` is not a finding (see below).
 
 | Field | Healthy | Finding means | User action |
 | --- | --- | --- | --- |
-| `tokenAuthorized` | `true` | Tailwind cannot publish to this account at all. Nothing else in this report matters until it is fixed. | Reconnect the Pinterest account from the Tailwind dashboard. |
+| `tokenStatus` | `"authorized"` | `"unauthorized"`: Tailwind cannot publish to this account at all. Nothing else in this report matters until it is fixed. | Reconnect the Pinterest account from the Tailwind dashboard. |
 | `isDomainVerified` | `true` | Tailwind has no verified website domain for this account. | Claim the website on Pinterest, then reconnect in Tailwind so the status refreshes. |
 | `avatarUrl` | non-null | No profile image. | Add a profile photo on Pinterest. |
 | `username` | non-null | No Pinterest username on record — usually a legacy connection. | Reconnect the account so Tailwind picks up the username. |
@@ -55,12 +56,20 @@ you report this finding, say that it reflects what Tailwind has recorded, and
 that a reconnect is what refreshes it. Do not tell the user their site is
 unverified on Pinterest — you cannot see Pinterest's side of it.
 
-`tokenAuthorized` is resolved live from Pinterest at request time, so it is
-trustworthy in a way the stored fields are not. One consequence worth knowing:
-during a Tailwind service degradation every account can report `false` at once.
-If every account in a multi-account org looks unauthorized simultaneously,
-treat that as suspect and say so rather than telling the user to reconnect all
-of them.
+## The connection status trap
+
+Read `tokenStatus`, not `tokenAuthorized`. `tokenAuthorized` is `false` both
+when the connection is revoked and when Tailwind could not check it, so an
+audit built on it tells a healthy account to reconnect whenever a lookup
+fails.
+
+`tokenStatus` is resolved live at request time, so it is trustworthy in a way
+the stored fields are not. `"unauthorized"` is the finding. `"unknown"` means
+Tailwind could not check the connection just now: report it as context ("the
+connection could not be verified right now; try the audit again later"),
+never as a reason to reconnect. During a Tailwind service degradation every
+account can come back `"unknown"` at once, which is the same situation, not
+a fleet of broken connections.
 
 ## Report structure
 
