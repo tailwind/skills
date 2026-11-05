@@ -26,6 +26,14 @@ const pluginManifest = readJson(".claude-plugin/plugin.json") as {
 	license: string;
 	privacyPolicyUrl: string;
 };
+const cursorManifest = readJson(".cursor-plugin/plugin.json") as Record<string, unknown> & {
+	name: string;
+	version: string;
+	description: string;
+	logo: string;
+	skills: string;
+	mcpServers: string;
+};
 const mcpConfig = readJson(".mcp.json") as {
 	mcpServers: Record<string, { type?: string; url?: string; command?: string }>;
 };
@@ -141,6 +149,35 @@ describe("Claude Code plugin manifest", () => {
 
 			expect(existsSync(skillPath)).toBe(true);
 			expect(path.relative(packageRoot, skillPath).split(path.sep)[0]).toBe("skills");
+		}
+	});
+});
+
+describe("Cursor plugin manifest", () => {
+	// Cursor's plugin schema sets additionalProperties: false, so copying a key
+	// from the Claude manifest makes the whole manifest invalid.
+	it("carries no Claude-only key that Cursor's schema would reject", () => {
+		expect(cursorManifest).not.toHaveProperty("$schema");
+		expect(cursorManifest).not.toHaveProperty("privacyPolicyUrl");
+	});
+
+	// One listing per marketplace, one product: a differing name, version, or
+	// description would make the same plugin read as two different things.
+	it("matches the Claude plugin's name, version, and description", () => {
+		expect(cursorManifest.name).toBe(pluginManifest.name);
+		expect(cursorManifest.version).toBe(pluginManifest.version);
+		expect(cursorManifest.description).toBe(pluginManifest.description);
+	});
+
+	// These are paths inside the mirror. A dangling one still parses as valid
+	// JSON, so the listing would lose its icon, server, or playbooks quietly.
+	it("points at a logo, MCP config, and skills directory that exist", () => {
+		for (const relativePath of [
+			cursorManifest.logo,
+			cursorManifest.mcpServers,
+			cursorManifest.skills,
+		]) {
+			expect(existsSync(path.join(packageRoot, relativePath))).toBe(true);
 		}
 	});
 });
