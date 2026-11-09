@@ -1,7 +1,7 @@
 {
 	"name": "tailwind",
 	"displayName": "Tailwind",
-	"version": "0.3.2",
+	"version": "0.3.3",
 	"description": "Create, schedule, and review Pinterest Pins with Tailwind.",
 	"author": {
 		"name": "Tailwind App"
